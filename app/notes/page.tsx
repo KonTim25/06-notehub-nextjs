@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from 'react';
-import css from './App.module.css';
+import css from '@/app/page.module.css';
 import { useDebounce } from 'use-debounce';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
