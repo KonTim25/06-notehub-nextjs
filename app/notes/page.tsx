@@ -1,59 +1,21 @@
-"use client";
-
-import { useState } from 'react';
-import css from '@/app/page.module.css';
-import { useDebounce } from 'use-debounce';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
-import SearchBox from '@/components/SearchBox/SearchBox';
-import Pagination from '@/components/Pagination/Pagination';
-import Loader from '@/components/Loader/Loader';
-import NoteList from '@/components/NoteList/NoteList';
-import Modal from '@/components/Modal/Modal';
-import NoteForm from '@/components/NoteForm/NoteForm';
+import Notes from './Notes.client';
+import QueryProvider from '@/app/providers/QueryProvider';
 
-export default function App() {
-  const [search, setSearch] = useState('');
-  const [debouncedSearch] = useDebounce(search, 500);
-  const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default async function NotesPage() {
+  const queryClient = new QueryClient();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['notes', page, debouncedSearch],
-    queryFn: () => fetchNotes({ page, perPage: 12, search: debouncedSearch }),
-    placeholderData: keepPreviousData,
+  await queryClient.prefetchQuery({
+    queryKey: ['notes', 1, ''],
+    queryFn: () => fetchNotes({ page: 1, perPage: 12, search: '' }),
   });
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
-
-  const handleNoteCreated = () => setIsModalOpen(false);
-
   return (
-    <div className={css.app}>
-      <header className={css.toolbar}>
-        <SearchBox value={search} onChange={handleSearchChange} />
-        {data && data.totalPages > 1 && (
-          <Pagination page={page} setPage={setPage} totalPages={data.totalPages} />
-        )}
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>
-          Create note +
-        </button>
-      </header>
-      {isLoading && <Loader />}
-      {isError && <p>Error loading...</p>}
-      
-      {data && data.notes.length > 0 && (
-        <NoteList notes={data.notes} />
-      )}
-      
-      {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm onSuccess={handleNoteCreated} />
-        </Modal>
-      )}
-    </div>
+    <QueryProvider>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Notes />
+      </HydrationBoundary>
+    </QueryProvider>
   );
 }
