@@ -1,4 +1,6 @@
-import { type ReactNode, useEffect } from 'react';
+"use client";
+
+import { type ReactNode, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import css from './Modal.module.css';
 
@@ -7,9 +9,14 @@ interface ModalProps {
   onClose: () => void;
 }
 
-const modalRoot = document.getElementById('modal-root')!;
-
 export default function Modal({ children, onClose }: ModalProps) {
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const root = document.getElementById('modal-root');
+    setModalRoot(root); // Устанавливаем modalRoot только после монтирования
+  }, []);
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -21,6 +28,9 @@ export default function Modal({ children, onClose }: ModalProps) {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
   };
+
+  // Проверяем, что modalRoot установлен, прежде чем рендерить портал
+  if (!modalRoot) return null;
 
   return createPortal(
     <div className={css.backdrop} role="dialog" aria-modal="true" onClick={handleBackdropClick}>

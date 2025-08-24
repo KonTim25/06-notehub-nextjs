@@ -29,6 +29,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Header />
         {children}
+        <div id="modal-root"></div>
         <Footer /> 
       </body>
     </html>
