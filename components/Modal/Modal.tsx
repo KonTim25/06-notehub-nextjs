@@ -14,7 +14,15 @@ export default function Modal({ children, onClose }: ModalProps) {
 
   useEffect(() => {
     const root = document.getElementById('modal-root');
-    setModalRoot(root); // Устанавливаем modalRoot только после монтирования
+    setModalRoot(root);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, []);
 
   useEffect(() => {
@@ -29,7 +37,6 @@ export default function Modal({ children, onClose }: ModalProps) {
     if (e.target === e.currentTarget) onClose();
   };
 
-  // Проверяем, что modalRoot установлен, прежде чем рендерить портал
   if (!modalRoot) return null;
 
   return createPortal(
